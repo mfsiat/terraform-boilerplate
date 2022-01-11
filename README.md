@@ -1,12 +1,11 @@
-# Terraform Crash Course 
+# Terraform boilerplate
 
-- Download and install terraform 
-- Setup terraform 
-- Download the cloud provider plugin ( provider )
-
-
-## Write the terraform scripts 
-
-- Follow the terraform website for more info
-- First add the providers
-- 
+- First configure awscli 
+- Change the profile name for aws access keys 
+```
+provider "aws" {
+  region = "your_region_name"
+  shared_credentials_file = "/home/maya/.aws/credentials"
+  profile = "your_profile_name"
+}
+```
