@@ -17,6 +17,7 @@ provider "aws" {
 resource "aws_instance" "terraform" {
   ami           = "ami-055d15d9cfddf7bd3"
   key_name        = "dockertest"
+  security_groups = [data.aws_security_group.Test-cicd.name]
   instance_type = "t2.micro"
   tags = {
       Name = "built-with-terraform"
@@ -46,6 +47,19 @@ resource "aws_instance" "terraform" {
               sudo bash -c 'echo "Hello!" > /var/www/html/index.html'
              EOF
 }
+
+data "aws_security_group" "Test-cicd" {
+  id = "sg-08f97cdd365414625"
+}
+
+# resource "aws_ebs_volume" "terraform" {
+#   availability_zone = "ap-southeast-1"
+#   size              = 40
+
+#   tags = {
+#     Name = "terraform-test"
+#   }
+# }
 
 output "IP" {
   value = aws_instance.terraform.public_ip
