@@ -19,6 +19,22 @@ resource "aws_instance" "terraform" {
   key_name        = "dockertest"
   security_groups = [data.aws_security_group.Test-cicd.name]
   instance_type = "t2.micro"
+
+  ebs_block_device {
+    device_name = "/dev/sda1"
+    encrypted = true
+    kms_key_id = "5e8d7b1b-aef2-4808-aeaa-123f1f921376"
+    volume_size = 20
+    volume_type = "gp2"
+  }
+  
+  # root_block_device {
+  #   delete_on_termination = true
+  #   encrypted = true
+  #   kms_key_id = "5e8d7b1b-aef2-4808-aeaa-123f1f921376"
+  #   volume_size = 20
+  #   volume_type = "gp2"
+  # }
   tags = {
       Name = "built-with-terraform"
   }
@@ -45,12 +61,36 @@ resource "aws_instance" "terraform" {
               sudo chown ubuntu:ubuntu /usr/share/nginx/html/ -R
               sudo chown ubuntu:ubuntu /var/www/html -R
               sudo bash -c 'echo "Hello!" > /var/www/html/index.html'
+              #######################"Setup PHP & Composer"############################################
+              sudo apt-add-repository ppa:ondrej/php
+              sudo apt update -y
+              sudo apt install -y php7.1 php7.1-cli php7.1-common php7.1-fpm
+              sudo apt install -y php7.1-mysql php7.1-dom php7.1-simplexml php7.1-ssh2 php7.1-xml php7.1-xmlreader php7.1-curl  php7.1-exif  php7.1-ftp php7.1-gd  php7.1-iconv php7.1-imagick php7.1-json  php7.1-mbstring php7.1-posix php7.1-sockets php7.1-tokenizer
+              sudo apt install -y php7.1-mysqli php7.1-pdo  php7.1-sqlite3 php7.1-ctype php7.1-fileinfo php7.1-zip php7.1-exif
+              cd ~
+              curl -sS https://getcomposer.org/installer -o /tmp/composer-setup.php
+              HASH=`curl -sS https://composer.github.io/installer.sig`
+              echo $HASH
+              php -r "if (hash_file('SHA384', '/tmp/composer-setup.php') === '$HASH') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+              sudo php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer
+              ###################"Setup Supervisor"#####################################################
+              sudo apt install supervisor
              EOF
 }
 
 data "aws_security_group" "Test-cicd" {
   id = "sg-08f97cdd365414625"
 }
+# data "root_block_device" "test" {
+#   delete_on_termination = true
+#   device_name           = "/dev/sda1"
+#   encrypted             = false
+#   tags                  = {
+#     Name = "terraform"
+#   }
+#   volume_size           = 16
+#   volume_type           = "gp2"
+# }
 
 # resource "aws_ebs_volume" "terraform" {
 #   availability_zone = "ap-southeast-1"
@@ -63,4 +103,8 @@ data "aws_security_group" "Test-cicd" {
 
 output "IP" {
   value = aws_instance.terraform.public_ip
+}
+
+output "id" {
+  value = aws_instance.terraform.id
 }
