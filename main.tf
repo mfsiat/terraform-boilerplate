@@ -11,30 +11,22 @@ terraform {
 provider "aws" {
   region = "ap-southeast-1"
   shared_credentials_file = "/home/maya/.aws/credentials"
-  profile = "softopark"
+  profile = ""
 }
 
 resource "aws_instance" "terraform" {
   ami           = "ami-055d15d9cfddf7bd3"
-  key_name        = "dockertest"
-  security_groups = [data.aws_security_group.Test-cicd.name]
-  instance_type = "t2.micro"
+  key_name        = ""
+  security_groups = [data.aws_security_group.web-access.name]
+  instance_type = "t3.medium"
 
   ebs_block_device {
     device_name = "/dev/sda1"
-    encrypted = true
-    kms_key_id = "5e8d7b1b-aef2-4808-aeaa-123f1f921376"
+    # encrypted = true
+    # kms_key_id = "5e8d7b1b-aef2-4808-aeaa-123f1f921376"
     volume_size = 20
     volume_type = "gp2"
-  }
-  
-  # root_block_device {
-  #   delete_on_termination = true
-  #   encrypted = true
-  #   kms_key_id = "5e8d7b1b-aef2-4808-aeaa-123f1f921376"
-  #   volume_size = 20
-  #   volume_type = "gp2"
-  # }
+  }  
   tags = {
       Name = "built-with-terraform"
   }
@@ -65,7 +57,7 @@ resource "aws_instance" "terraform" {
               sudo apt-add-repository ppa:ondrej/php
               sudo apt update -y
               sudo apt install -y php7.1 php7.1-cli php7.1-common php7.1-fpm
-              sudo apt install -y php7.1-mysql php7.1-dom php7.1-simplexml php7.1-ssh2 php7.1-xml php7.1-xmlreader php7.1-curl  php7.1-exif  php7.1-ftp php7.1-gd  php7.1-iconv php7.1-imagick php7.1-json  php7.1-mbstring php7.1-posix php7.1-sockets php7.1-tokenizer
+              sudo apt install -y php7.1-mysql php7.1-dom php7.1-simplexml php7.1-ssh2 php7.1-xml php7.1-xmlreader php7.1-curl  php7.1-exif  php7.1-ftp php7.1-gd  php7.1-iconv php7.1-imagick php7.1-json  php7.1-mbstring php7.1-posix php7.1-sockets php7.1-tokenizer php7.1-mongodb
               sudo apt install -y php7.1-mysqli php7.1-pdo  php7.1-sqlite3 php7.1-ctype php7.1-fileinfo php7.1-zip php7.1-exif
               cd ~
               curl -sS https://getcomposer.org/installer -o /tmp/composer-setup.php
@@ -78,29 +70,23 @@ resource "aws_instance" "terraform" {
              EOF
 }
 
-data "aws_security_group" "Test-cicd" {
-  id = "sg-08f97cdd365414625"
+data "aws_security_group" "web-access" {
+  id = "sg-c4963aa1"
 }
-# data "root_block_device" "test" {
-#   delete_on_termination = true
-#   device_name           = "/dev/sda1"
-#   encrypted             = false
-#   tags                  = {
-#     Name = "terraform"
-#   }
-#   volume_size           = 16
-#   volume_type           = "gp2"
+
+# data "aws_route53_zone" "main" {
+#   name = ""
 # }
 
-# resource "aws_ebs_volume" "terraform" {
-#   availability_zone = "ap-southeast-1"
-#   size              = 40
 
-#   tags = {
-#     Name = "terraform-test"
-#   }
+# resource "aws_route53_record" "deploy" {
+#   zone_id = data.aws_route53_zone.main.zone_id 
+#   name    = ""
+#   type    = "A"
+#   ttl     = "60"
+#   # records = ["10.0.0.1"]
+#   records = [aws_instance.terraform.public_ip]
 # }
-
 output "IP" {
   value = aws_instance.terraform.public_ip
 }
