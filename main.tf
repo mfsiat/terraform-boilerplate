@@ -8,12 +8,16 @@ terraform {
 }
 
 # Configure the AWS Provider
+# Add aws profile name
 provider "aws" {
   region = "ap-southeast-1"
   shared_credentials_file = "/home/maya/.aws/credentials"
   profile = "softopark"
 }
 
+# Configure ec2 instance type
+# Configure EBS storage & install docker and nginx
+# Add Your pem file on the key_name
 resource "aws_instance" "terraform" {
   ami           = "ami-055d15d9cfddf7bd3"
   key_name        = "dockertest"
@@ -28,7 +32,7 @@ resource "aws_instance" "terraform" {
     volume_type = "gp2"
   }  
   tags = {
-      Name = "test"
+      Name = "built-with-terraform"
   }
   user_data = <<-EOF
               #!/bin/bash
@@ -56,31 +60,31 @@ resource "aws_instance" "terraform" {
              EOF
 }
 
-# Maya
+# configure security group firewall
 # data "aws_security_group" "web-access" {
 #   id = "sg-c4963aa1"
 # }
 
-# Softopark
 data "aws_security_group" "web-access" {
   id = "sg-1f6feb68"
 }
 
+# Configure DNS add your dns if you have anything on Route53
 # Route 53 
 # Setup dns
-data "aws_route53_zone" "main" {
-  name = "iqraservices.com"
-}
+# data "aws_route53_zone" "main" {
+#   name = "iqraservices.com"
+# }
 
 
-resource "aws_route53_record" "deploy" {
-  zone_id = data.aws_route53_zone.main.zone_id 
-  name    = "traefik-dashboard.iqraservices.com"
-  type    = "A"
-  ttl     = "60"
-  # records = ["10.0.0.1"]
-  records = [aws_instance.terraform.public_ip]
-}
+# resource "aws_route53_record" "deploy" {
+#   zone_id = data.aws_route53_zone.main.zone_id 
+#   name    = "traefik-dashboard.iqraservices.com"
+#   type    = "A"
+#   ttl     = "60"
+#   # records = ["10.0.0.1"]
+#   records = [aws_instance.terraform.public_ip]
+# }
 output "IP" {
   value = aws_instance.terraform.public_ip
 }
